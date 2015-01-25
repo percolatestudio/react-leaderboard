@@ -132,22 +132,48 @@ var Player = React.createClass({
   }
 });
 
-// main entry point
-Meteor.startup(function() {
-  if (Meteor.isClient) {
-    React.render(
+var Body = React.createClass({
+  propTypes: {
+    collection: React.PropTypes.instanceOf(Mongo.Collection).isRequired,
+    where: React.PropTypes.string.isRequired
+  },
+
+  render: function() {
+    return (
       <div className="app">
+        <h3>Rendered on the {this.props.where}</h3>
         <div className="outer">
           <div className="logo"></div>
           <h1 className="title">Leaderboard</h1>
           <div className="subtitle">Select a scientist to give them points</div>
         </div>
         <Leaderboard collection={Players} />
-      </div>,
-      document.body
+      </div>
     );
-  } else {
-    var rootEl = <Leaderboard collection={Players} />;
-    console.log(React.renderToString(rootEl));
   }
-});  
+});
+
+if (Meteor.isServer) {
+  // add a raw connect handler for / that renders the body with react.
+  var url = Npm.require("url");
+  
+  WebApp.rawConnectHandlers.use(
+    Meteor.bindEnvironment(function(req, res, next) {
+      if (url.parse(req.url).path === '/') {
+        req.body =
+          React.renderToString(<Body collection={Players} where='server' />);
+      }
+
+      next();
+    }, 'ssr-router')
+  );
+} else {
+  // on the client, just render to the body
+  Meteor.startup(function() {
+    // wait 3 seconds to show folks that the output is indeed server rendered
+    Meteor.setTimeout(function() {
+      React.render(<Body collection={Players} where='client' />, document.body);
+    }, 3000);
+  });
+}
+

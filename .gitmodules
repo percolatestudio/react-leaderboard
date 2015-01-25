@@ -1,0 +1,4 @@
+[submodule "private/meteor"]
+	path = private/meteor
+	url = git@github.com:zol/meteor.git
+	branch = ssr-hooks
