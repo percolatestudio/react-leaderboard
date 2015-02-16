@@ -16,7 +16,7 @@ var Leaderboard = React.createClass({
   
   componentWillMount: function() {
     var getPlayers = function() {
-      var players = this.props.collections.Players.find({}, {sort: {score: -1}}).fetch();
+      var players = this.props.collections.Players.find({}, {sort: {score: -1, _id: 1}}).fetch();
       this.setState({players: players});
     }.bind(this);
     
