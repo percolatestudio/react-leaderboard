@@ -2,7 +2,9 @@ var POINTS = 5;
 
 var Leaderboard = React.createClass({
   propTypes: {
-    collection: React.PropTypes.instanceOf(Mongo.Collection).isRequired
+    collections: React.PropTypes.objectOf(
+      React.PropTypes.instanceOf(Mongo.Collection)
+    ).isRequired
   },
   
   getInitialState: function() {
@@ -14,7 +16,7 @@ var Leaderboard = React.createClass({
   
   componentWillMount: function() {
     var getPlayers = function() {
-      var players = this.props.collection.find({}, {sort: {score: -1}}).fetch();
+      var players = this.props.collections.Players.find({}, {sort: {score: -1}}).fetch();
       this.setState({players: players});
     }.bind(this);
     
@@ -31,20 +33,26 @@ var Leaderboard = React.createClass({
   componentWillUnmount: function() {
     this.dep.stop();
   },
+
+  selectedPlayer: function() {
+    return _.find(this.state.players, function(x) { 
+      return x._id === this.state.selectedPlayerId;
+    }.bind(this));
+  },
   
   handlePlayerSelected: function(id) {
     this.setState({selectedPlayerId: id});
   },
   
   handleAddPoints: function() {
-    this.props.collection.update(this.state.selectedPlayerId, {$inc: {score: POINTS}});
+    this.props.collections.Players.update(this.state.selectedPlayerId, {$inc: {score: POINTS}});
   },
   
   render: function() {
     return (
       <div className="leaderboard">
-        <PlayerList state={this.state} onPlayerSelected={this.handlePlayerSelected} />
-        <PlayerSelector state={this.state} onAddPoints={this.handleAddPoints} />
+        <PlayerList {...this.state} onPlayerSelected={this.handlePlayerSelected} />
+        <PlayerSelector selectedPlayer={this.selectedPlayer()} onAddPoints={this.handleAddPoints} />
       </div>
     );
   }
@@ -52,24 +60,15 @@ var Leaderboard = React.createClass({
 
 var PlayerSelector = React.createClass({
   propTypes: {
-    state: React.PropTypes.object.isRequired
+    selectedPlayer: React.PropTypes.object
   },
-  
-  selectedPlayerName: function() { 
-    var player = _.find(this.props.state.players, function(x) { 
-      return x._id === this.props.state.selectedPlayerId;
-    }.bind(this));
 
-    return player && player.name; 
-  },
-  
   render: function() {
-    var selectedName = this.selectedPlayerName();
     var node;
     
-    if (selectedName) {
+    if (this.props.selectedPlayer) {
       node = <div className="details">
-        <div className="name">{selectedName}</div>
+        <div className="name">{this.props.selectedPlayer.name}</div>
         <button className="inc" onClick={this.props.onAddPoints}>Add {POINTS} points</button>
       </div>;
     } else {
@@ -82,15 +81,16 @@ var PlayerSelector = React.createClass({
 
 var PlayerList = React.createClass({
   propTypes: {
-    state: React.PropTypes.object.isRequired
+    players: React.PropTypes.array.isRequired,
+    selectedPlayerId: React.PropTypes.string
   },
   
   render: function() {
     // harmony destructuring assignment
-    var { state, ...other } = this.props;
+    var { players, selectedPlayerId, ...other } = this.props;
 
-    var playerNodes = state.players.map(function(player, index) {
-      var selected = state.selectedPlayerId === player._id;
+    var playerNodes = players.map(function(player, index) {
+      var selected = selectedPlayerId === player._id;
 
       return (
         <Player {...other} player={player} key={index} selected={selected} />
@@ -134,7 +134,9 @@ var Player = React.createClass({
 
 var Body = React.createClass({
   propTypes: {
-    collection: React.PropTypes.instanceOf(Mongo.Collection).isRequired,
+    collections: React.PropTypes.objectOf(
+      React.PropTypes.instanceOf(Mongo.Collection)
+    ).isRequired,
     where: React.PropTypes.string.isRequired
   },
 
@@ -147,11 +149,16 @@ var Body = React.createClass({
           <h1 className="title">Leaderboard</h1>
           <div className="subtitle">Select a scientist to give them points</div>
         </div>
-        <Leaderboard collection={Players} />
+        <Leaderboard collections={collections} />
       </div>
     );
   }
 });
+
+
+var collections = {
+  Players: Players
+};
 
 if (Meteor.isServer) {
   // add a raw connect handler for / that renders the body with react.
@@ -161,7 +168,7 @@ if (Meteor.isServer) {
     Meteor.bindEnvironment(function(req, res, next) {
       if (url.parse(req.url).path === '/') {
         req.body =
-          React.renderToString(<Body collection={Players} where='server' />);
+          React.renderToString(<Body collections={collections} where='server' />);
       }
 
       next();
@@ -172,7 +179,7 @@ if (Meteor.isServer) {
   Meteor.startup(function() {
     // wait 3 seconds to show folks that the output is indeed server rendered
     Meteor.setTimeout(function() {
-      React.render(<Body collection={Players} where='client' />, document.body);
+      React.render(<Body collections={collections} where='client' />, document.body);
     }, 3000);
   });
 }
