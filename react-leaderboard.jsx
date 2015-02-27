@@ -1,39 +1,26 @@
 var POINTS = 5;
 
 var Leaderboard = React.createClass({
+  mixins: [ReactMeteor.Mixin],
+
   propTypes: {
     collections: React.PropTypes.objectOf(
       React.PropTypes.instanceOf(Mongo.Collection)
     ).isRequired
   },
-  
+
   getInitialState: function() {
     return {
-      players: [],
       selectedPlayerId: null
     };
   },
-  
-  componentWillMount: function() {
-    var getPlayers = function() {
-      var players = this.props.collections.Players.find({}, {sort: {score: -1, _id: 1}}).fetch();
-      this.setState({players: players});
-    }.bind(this);
-    
-    // XXX: For some reason Tracker throws something about fibers when I try to
-    // create the autorun on the server, this is valid as I don't actuall want
-    // an autorun but I'd like to know why.
-    if (Meteor.isClient) {
-      this.dep = Tracker.autorun(function() { getPlayers(); }.bind(this));
-    } else {
-      getPlayers();
+
+  getMeteorState: function() {
+    return {
+      players: this.props.collections.Players.find({}, {sort: {score: -1, _id: 1}}).fetch()
     }
   },
   
-  componentWillUnmount: function() {
-    this.dep.stop();
-  },
-
   selectedPlayer: function() {
     return _.find(this.state.players, function(x) { 
       return x._id === this.state.selectedPlayerId;
@@ -117,11 +104,15 @@ var Player = React.createClass({
   },
   
   render: function() {
-    // just sugar. classes could be a String of class names
-    var classes = React.addons.classSet({
-      'player': true,
-      'selected': this.props.selected
-    });
+    // React addons aren't working just yet https://github.com/meteor/meteor/issues/3505
+    // var classes = React.addons.classSet({
+    //   'player': true,
+    //   'selected': this.props.selected
+    // });
+    
+    var classes = 'player';
+    if (this.props.selected)
+      classes += ' selected';
 
     return (
       <li className={classes} onClick={this.handleClick}>

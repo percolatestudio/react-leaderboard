@@ -14,7 +14,6 @@ ejson@1.0.5
 fastclick@1.0.2
 follower-livedata@1.0.3
 geojson-utils@1.0.2
-hipertracker:reactjs@0.0.7
 html-tools@1.0.3
 htmljs@1.0.3
 http@1.0.10
@@ -27,6 +26,7 @@ livedata@1.0.12
 logging@1.0.6
 meteor@1.1.4
 meteor-platform@1.2.1
+meteorhacks:inject-initial@1.0.0
 minifiers@1.1.3
 minimongo@1.0.6
 mobile-status-bar@1.0.2
@@ -34,6 +34,7 @@ mongo@1.0.11
 observe-sequence@1.0.4
 ordered-dict@1.0.2
 random@1.0.2
+react@0.1.0
 reactive-dict@1.0.5
 reactive-var@1.0.4
 reload@1.1.2

@@ -2,3 +2,6 @@
 	path = private/meteor
 	url = git@github.com:zol/meteor.git
 	branch = ssr-hooks
+[submodule "packages/react"]
+	path = packages/react
+	url = https://github.com/tmeasday/react-meteor
