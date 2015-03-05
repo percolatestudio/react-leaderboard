@@ -38,8 +38,10 @@ var Leaderboard = React.createClass({
   
   render: function() {
     return (
-      <div className="leaderboard">
-        <PlayerList {...this.state} onPlayerSelected={this.handlePlayerSelected} />
+      <div>
+        <div className="leaderboard">
+          <PlayerList {...this.state} onPlayerSelected={this.handlePlayerSelected} />
+        </div>
         <PlayerSelector selectedPlayer={this.selectedPlayer()} onAddPoints={this.handleAddPoints} />
       </div>
     );
@@ -140,13 +142,12 @@ var Body = React.createClass({
           <div className="logo"></div>
           <h1 className="title">Leaderboard</h1>
           <div className="subtitle">Select a scientist to give them points</div>
+          <Leaderboard collections={collections} />
         </div>
-        <Leaderboard collections={collections} />
       </div>
     );
   }
 });
-
 
 var collections = {
   Players: Players
@@ -161,6 +162,9 @@ if (Meteor.isServer) {
       if (url.parse(req.url).path === '/') {
         req.body =
           React.renderToString(<Body collections={collections} where='server' />);
+        req.head = '<title>Leaderboard</title> \
+          <meta name="viewport" content="width=device-width, user-scalable=no"> \
+          <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600" rel="stylesheet" type="text/css">'
       }
 
       next();
