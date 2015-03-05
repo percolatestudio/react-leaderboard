@@ -11,7 +11,8 @@ var Leaderboard = React.createClass({
 
   getInitialState: function() {
     return {
-      selectedPlayerId: null
+      selectedPlayerId: null,
+      players: []
     };
   },
 
