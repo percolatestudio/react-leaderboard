@@ -4,7 +4,7 @@ Meteor's leaderboard example app, rewritten in React.
 
 Notes:
 
-Make sure you update submodules after checkout to get our extended webapp + react-meteor packages, `submodule update --remote --init`
+Make sure you update submodules after checkout to get our extended webapp + react-meteor packages, `git submodule update --remote --init`
 
 
 1. Our forked version of the webapp package allows server-side rendering.
